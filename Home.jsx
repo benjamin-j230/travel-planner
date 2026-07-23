@@ -1,6 +1,34 @@
-import { Link } from "react-router-dom";
+import axios from "axios";
+import { useState } from "react";
+import {useNavigate} from 'react-router-dom'
 
 export default function Home() {
+  const [searchPlace, setSearchPlace] = useState("");
+  const nav=useNavigate()
+  async function searchPlaces(e) {
+    e.preventDefault();
+    localStorage.setItem("searchPlace",searchPlace)
+    try {
+      const res=await axios.post("http://localhost:5000/api/ai/trip-planner", {
+        data: searchPlace,
+      });
+      localStorage.removeItem("tripData");
+      console.log(res.data.data)
+      localStorage.setItem("tripData", JSON.stringify(res.data.data));
+      const fuelRes=await axios.post("http://localhost:5000/api/ai/fuel-station",{
+        data:searchPlace
+      })
+      localStorage.removeItem("fuelData")
+      localStorage.removeItem("electricData")
+      localStorage.setItem("fuelData", JSON.stringify(fuelRes.data.fuel));
+      localStorage.setItem("electricData", JSON.stringify(fuelRes.data.electric));
+      console.log(fuelRes.data.fuel)
+      console.log(fuelRes.data.electric)
+    } catch (err) {
+      console.log(err);
+    }
+    nav('/search')
+  }
   return (
     <>
       {/* Hero */}
@@ -21,11 +49,13 @@ export default function Home() {
           </p>
           <form
             className="flex max-w-xl bg-white rounded-lg overflow-hidden shadow-[0_12px_30px_rgba(15,39,72,0.14)]"
-            action="/search"
             method="get"
+            onSubmit={searchPlaces}
           >
             <input
               type="text"
+              value={searchPlace}
+              onChange={(e) => setSearchPlace(e.target.value)}
               name="q"
               placeholder="Search famous places..."
               className="flex-1 border-none outline-none px-5 py-3.5 text-[0.95rem] text-[#1e2a3a]"

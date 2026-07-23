@@ -1,3 +1,5 @@
+import {useState} from 'react'
+import {useEffect} from 'react'
 const fuelStations = [
   { name: "TotalEnergies", dist: "2.1 km", color: "#1fa971" },
   { name: "BP Express",    dist: "4.3 km", color: "#f39c12" },
@@ -12,6 +14,14 @@ const stats = [
 ];
 
 export default function Route() {
+  const [details,setDetails]=useState("")
+  const [fuel,setFuel]=useState([])
+  const [electric,setElectric]=useState([])
+  useEffect(()=>{
+    setDetails(localStorage.getItem("details"))
+    setFuel(JSON.parse(localStorage.getItem("fuelData")))
+    setElectric(JSON.parse(localStorage.getItem("electricData")))
+  })
   return (
     <section className="max-w-[1200px] mx-auto px-5 my-10">
       <h2 className="text-3xl font-bold mb-8">Route Details</h2>
@@ -21,39 +31,23 @@ export default function Route() {
 
         {/* From / To */}
         <div className="flex flex-wrap items-center justify-between gap-5 mb-8">
-          <div className="flex-1">
-            <label className="block text-[#777] text-sm mb-2">From</label>
-            <div className="flex items-center text-lg font-semibold">
-              <span className="inline-block w-3 h-3 rounded-full bg-[#18b76a] mr-2" />
-              Paris, France
-            </div>
-          </div>
-
-          <div className="text-2xl text-[#1a56db] mt-5">⇄</div>
+          
 
           <div className="flex-1">
             <label className="block text-[#777] text-sm mb-2">Destination</label>
             <div className="flex items-center text-lg font-semibold">
               <span className="inline-block w-3 h-3 rounded-full bg-[#ff4d4d] mr-2" />
-              Versailles Palace, France
+              {details}
             </div>
           </div>
         </div>
 
-        {/* Stat Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-          {stats.map(({ label, value }) => (
-            <div key={label} className="bg-[#f5f8ff] p-5 rounded-xl">
-              <div className="text-[#666] text-sm mb-2.5">{label}</div>
-              <div className="text-[22px] font-bold text-[#2457ff]">{value}</div>
-            </div>
-          ))}
-        </div>
+       
 
         {/* Map */}
         <div className="w-full h-[500px] overflow-hidden rounded-2xl">
           <iframe
-            src="https://www.google.com/maps?q=Versailles%20Palace,France&output=embed"
+            src={`https://www.google.com/maps?q=${encodeURIComponent(details)}&output=embed`}
             allowFullScreen
             loading="lazy"
             className="w-full h-full border-0"
@@ -66,23 +60,43 @@ export default function Route() {
       <div className="bg-white mt-8 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
         <h3 className="text-lg font-bold mb-5">Nearby Fuel Stations</h3>
 
-        {fuelStations.map(({ name, dist, color }, i) => (
+        {fuel.map((fuels, i) => (
           <div
-            key={name}
-            className={`flex justify-between items-center py-[18px] ${
-              i < fuelStations.length - 1 ? "border-b border-[#eee]" : ""
-            }`}
+            key={fuels.name}
+            className={`flex justify-between items-center py-[18px] `}
           >
             <div>
-              <span
-                className="inline-block w-3 h-3 rounded-full mr-2.5"
-                style={{ background: color }}
-              />
-              <strong>{name}</strong>
+              
+              <strong>{fuels.name}</strong>
             </div>
-            <div>{dist}</div>
+            <div>{fuels.dist}</div>
             <a
-              href="https://maps.google.com"
+               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${fuels.name} ${fuels.location}`
+  )}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[#2457ff] font-semibold no-underline"
+            >
+              Open in Maps
+            </a>
+          </div>
+        ))}<br></br><br></br><br></br>
+        <h3 className="text-lg font-bold mb-5">Nearby electric chargers</h3>
+        {electric.map((fuels, i) => (
+          <div
+            key={fuels.name}
+            className={`flex justify-between items-center py-[18px] `}
+          >
+            <div>
+              
+              <strong>{fuels.name}</strong>
+            </div>
+            <div>{fuels.dist}</div>
+            <a
+               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${fuels.name} ${fuels.location}`
+  )}`}
               target="_blank"
               rel="noreferrer"
               className="text-[#2457ff] font-semibold no-underline"
